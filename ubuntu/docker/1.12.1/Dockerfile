@@ -74,6 +74,28 @@ RUN set -x \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
+ENV JAVA_VERSION=8 \
+    JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
+    JDK_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
+    JRE_HOME="/usr/lib/jvm/java-8-openjdk-amd64/jre" \
+    GRADLE_VERSION=4.1
+
+# Install Java
+RUN apt-get update \ 
+    && apt-get install -y software-properties-common \
+    && add-apt-repository ppa:openjdk-r/ppa \
+    && apt-get update \
+    && apt-get -y install python-setuptools \
+    && apt-get -y install openjdk-$JAVA_VERSION-jdk \
+    && apt-get clean \
+    # Ensure Java cacerts symlink points to valid location
+    && update-ca-certificates -f \
+    && mkdir -p /usr/src/gradle \
+    && wget "https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip" -O /usr/src/gradle/gradle-$GRADLE_VERSION-bin.zip \
+    && unzip /usr/src/gradle/gradle-$GRADLE_VERSION-bin.zip -d /usr/local \
+    && ln -s /usr/local/gradle-$GRADLE_VERSION/bin/gradle /usr/bin/gradle \
+    && rm -rf /usr/src/gradle \
+    && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 VOLUME /var/lib/docker
 
 ENTRYPOINT ["dockerd-entrypoint.sh"]
